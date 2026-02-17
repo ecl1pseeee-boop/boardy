@@ -35,7 +35,7 @@
 
 ### 9. Создание нового пользователя
 #### 09-new-user and 10-user-check.png
-![Создание пользователя](screenshots/09-new-user\ and\ 10-user-check.png)
+![Создание пользователя](screenshots/09-new-user_and_10-user-check.png)
 
 ### 10. Содержимое корня (/)
 #### 11-root-tree.png
