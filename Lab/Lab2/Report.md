@@ -32,3 +32,6 @@
 #### 09-github-repo.png
 ![Репозиторий](screenshots/09-github-repo.png)
 
+### 8. Ветка и Pull Request
+#### 09-github-repo.png
+![PR](screenshots/10-pull-request.png)
