@@ -18,7 +18,6 @@
 ``` server_name _ ``` - имя хоста
 ``` index index.html index.htm index.nginx-debian.html ``` - где лежит index файл
 
-## Далее будет работа с DNS-зонами. Но пока что у меня нет доступа к gorgeous.ai-info.ru, поэтому я взял dns зону, которую предлагает netangels
 ### 6. DNS-зона
 ![DNS](screenshots/05-dns-zone.png)
 
@@ -29,12 +28,10 @@
 ![A-запись](screenshots/07-ping.png)
 
 ### 9. dig
-![dig](screenshots/08-dig-wsl.png)
 ![dig](screenshots/08-dig.png)
 
 ### 10. dig + trace
 ![dig+trace](screenshots/09-dig-trace.png)
-![dig+trace+wsl](screenshots/09-dig-trace-wsl.png)
 
 ### 11. Сайт по домену
 ![browser-domain](screenshots/10-browser-domain.png)
