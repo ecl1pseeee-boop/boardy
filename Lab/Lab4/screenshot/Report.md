@@ -59,3 +59,6 @@ GET: Ответ с телом
 
 ### 14. Фильтрация логов
 ![Логи](screenshots/14-log-stats.png)
+
+### 15. Pull Request
+![PR](screenshots/15-pull-request.png)
