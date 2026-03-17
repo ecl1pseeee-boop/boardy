@@ -43,3 +43,6 @@
 
 ### 13. Автообновление
 ![renew](screenshots/14-renew.png)
+
+### 14. GitHub Pull Request
+![PR](screenshots/15-pull-request.png)
