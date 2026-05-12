@@ -1,0 +1,35 @@
+server {
+    listen 80;
+    server_name gorgeous.ai-info.ru;
+    return 301 https://$host$request_uri;
+}
+ 
+server {
+    listen 443 ssl http2;
+    server_name gorgeous.ai-info.ru;
+ 
+	# Пути к вашим новым сертификатам
+    ssl_certificate /etc/nginx/ssl/gorgeous.crt;
+    ssl_certificate_key /etc/nginx/ssl/gorgeous.key;
+
+    # Оптимизация SSL
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+ 
+    root /var/www/boardy/public;        # !!! public/, не корень проекта
+    index index.php;
+ 
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;    # красивые URL
+    }
+ 
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.5-fpm.sock;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT   $realpath_root;
+    }
+ 
+    location ~ /\. { deny all; }       # запрет .env, .git и т.п.
+}
