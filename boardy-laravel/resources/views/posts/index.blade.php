@@ -1,6 +1,4 @@
-{{-- resources/views/posts/index.blade.php --}}
-
-@extends('layouts.app') {{-- Предполагаем, что у вас есть базовый макет --}}
+@extends('layouts.app')
 
 @section('content')
     <div class="container mx-auto p-6">
@@ -65,6 +63,9 @@
                 if (msg.type === 'new_comment' && Number(msg.comment.post_id) === CURRENT_POST_ID) {
                     appendComment(msg.comment)
                 }
+                else if(msg.type === 'new_post') {
+                    prependPost(msg.post);
+                }
             }
             ws.onclose = () => setTimeout(connect, 3000)
         }
@@ -103,6 +104,32 @@
                 const n = list.querySelectorAll('[data-comment-id]').length
                 counter.textContent = `(${n})`
             }
+        }
+
+        function prependPost(post) {
+            const feed = document.getElementById('posts-feed');
+            if (!feed) return;
+
+            const el = document.createElement('a');
+            el.href = `/posts/${post.id}`;
+
+            el.innerHTML = `
+        <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+            <h2 class="text-2xl font-semibold text-blue-600 mb-2">
+                ${escapeHtml(post.title)}
+            </h2>
+            <p class="text-gray-500 text-sm mb-4">
+                    <span>${escapeHtml(post.author.name || post.author)}</span>
+                    <span>только что</span>
+            </p>
+            </div>
+            <div class="text-gray-700 leading-relaxed mb-6">
+                <p>${escapeHtml(post.body)}</p>
+            </div>
+        </div>
+    `;
+
+            feed.prepend(el);
         }
 
         connect()
