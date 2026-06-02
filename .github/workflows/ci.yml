@@ -47,7 +47,6 @@ jobs:
           
           docker compose restart fastapi
           
-          # 7. Ждем готовности
           echo "Waiting for stack..."
           for i in {1..30}; do 
             if curl -fs http://localhost/health && curl -fs http://localhost/api/health; then
@@ -56,13 +55,6 @@ jobs:
             fi
             sleep 2 
           done
-      - name: Check FastAPI logs
-        if: always() # Выполнится в любом случае!
-        run: |
-          echo "=== FASTAPI LOGS ==="
-          docker compose logs fastapi
-          echo "=== NGINX LOGS ==="
-          docker compose logs nginx
       - name: Smoke endpoints
         run: | 
           curl -f http://localhost/health
@@ -70,3 +62,31 @@ jobs:
       - name: Tear down
         if: always()
         run: docker compose down -v
+
+  test:
+    runs-on: ubuntu-latest
+    needs: smoke
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+      - name: Install PHP deps
+        working-directory: ./boardy-laravel
+        run: composer install --no-interaction --prefer-dist
+      - name: Run PhpUnit
+        working-directory: ./boardy-laravel
+        run: php artisan test
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Install Python deps
+        run: pip install -r boardy-api/requirements.txt pytest httpx
+      - name: Run pytest
+        working-directory: ./boardy-api
+        run: pytest -v
+
+
