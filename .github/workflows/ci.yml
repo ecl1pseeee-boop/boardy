@@ -12,9 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: PHP syntax check
-        run: | 
-          find src -name "*.php" -print0 | \ 
-          xargs -0 -n1 php -l
+        working-directory: boardy-laravel
+        run: find app routes database -name "*.php" -print0 | xargs -0 -n1 php -l
       - name: Python syntax check
-        run: | 
-          python -m compileall api/ -q
+        working-directory: boardy-api
+        run: python -m compileall . -q
