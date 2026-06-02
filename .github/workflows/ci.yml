@@ -26,6 +26,7 @@ jobs:
         run: docker compose build 
       - name: Start stack
         run: |
+          cp .env.example .env
           cp boardy-laravel/.env.example boardy-laravel/.env
           
           docker compose up -d 
