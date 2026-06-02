@@ -29,20 +29,32 @@ jobs:
           cp .env.example .env
           cp boardy-laravel/.env.example boardy-laravel/.env
           
+          mkdir -p boardy-laravel/storage
+          touch boardy-laravel/storage/oauth-public.key
+          chmod -R 777 boardy-laravel/storage
+          
           docker compose up -d 
+          
           docker compose exec -T laravel composer install --no-interaction --prefer-dist --optimize-autoloader
           docker compose exec -T laravel php artisan key:generate
-          docker compose exec laravel php artisan migrate
-          docker compose exec laravel php artisan passport:client --public --name="Boardy SPA" --redirect_uri="http://localhost/oauth/callback"
+          docker compose exec -T laravel php artisan migrate --force
+          
+          docker compose exec -T laravel php artisan passport:keys --force
+          
+          docker compose exec -T laravel php artisan passport:client --public --name="Boardy SPA" --redirect_uri="http://localhost/oauth/callback" --no-interaction
+          
+          docker compose exec -T laravel chmod -R 755 storage/
           
           docker compose restart fastapi
-          for i in {1..30}; do
+          
+          # 7. Ждем готовности
+          echo "Waiting for stack..."
+          for i in {1..30}; do 
             if curl -fs http://localhost/health && curl -fs http://localhost/api/health; then
-              echo "Success! Laravel and FastAPI are both UP!"
+              echo "Success!"
               break
             fi
-            echo "Services are not ready yet, waiting... (Attempt $i/30)"
-            sleep 2
+            sleep 2 
           done
       - name: Check FastAPI logs
         if: always() # Выполнится в любом случае!
