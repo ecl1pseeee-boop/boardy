@@ -30,6 +30,12 @@ jobs:
           cp boardy-laravel/.env.example boardy-laravel/.env
           
           docker compose up -d 
+          docker compose exec -T laravel composer install --no-interaction --prefer-dist --optimize-autoloader
+          docker compose exec -T laravel php artisan key:generate
+          docker compose exec laravel php artisan migrate
+          docker compose exec laravel php artisan passport:client --public --name="Boardy SPA" --redirect_uri="http://localhost/oauth/callback"
+          
+          docker compose restart fastapi
           for i in {1..30}; do 
             curl -fs http://localhost/health && break 
             sleep 2 
