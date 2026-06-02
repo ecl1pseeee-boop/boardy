@@ -36,9 +36,13 @@ jobs:
           docker compose exec laravel php artisan passport:client --public --name="Boardy SPA" --redirect_uri="http://localhost/oauth/callback"
           
           docker compose restart fastapi
-          for i in {1..30}; do 
-            curl -fs http://localhost/health && break 
-            sleep 2 
+          for i in {1..30}; do
+            if curl -fs http://localhost/health && curl -fs http://localhost/api/health; then
+              echo "Success! Laravel and FastAPI are both UP!"
+              break
+            fi
+            echo "Services are not ready yet, waiting... (Attempt $i/30)"
+            sleep 2
           done
       - name: Smoke endpoints
         run: | 
