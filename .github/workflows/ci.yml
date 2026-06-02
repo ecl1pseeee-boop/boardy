@@ -44,6 +44,13 @@ jobs:
             echo "Services are not ready yet, waiting... (Attempt $i/30)"
             sleep 2
           done
+      - name: Check FastAPI logs
+        if: always() # Выполнится в любом случае!
+        run: |
+          echo "=== FASTAPI LOGS ==="
+          docker compose logs fastapi
+          echo "=== NGINX LOGS ==="
+          docker compose logs nginx
       - name: Smoke endpoints
         run: | 
           curl -f http://localhost/health
