@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, dev, lab16]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax check
+        working-directory: boardy-laravel
+        run: find app routes database -name "*.php" -print0 | xargs -0 -n1 php -l
+      - name: Python syntax check
+        working-directory: boardy-api
+        run: python -m compileall . -q
+  smoke:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build images
+        run: docker compose build 
+      - name: Start stack
+        run: |
+          cp .env.example .env
+          cp boardy-laravel/.env.example boardy-laravel/.env
+          
+          mkdir -p boardy-laravel/storage
+          touch boardy-laravel/storage/oauth-public.key
+          chmod -R 777 boardy-laravel/storage
+          
+          docker compose up -d 
+          
+          docker compose exec -T laravel composer install --no-interaction --prefer-dist --optimize-autoloader
+          docker compose exec -T laravel php artisan key:generate
+          docker compose exec -T laravel php artisan migrate --force
+          
+          docker compose exec -T laravel php artisan passport:keys --force
+          
+          docker compose exec -T laravel php artisan passport:client --public --name="Boardy SPA" --redirect_uri="http://localhost/oauth/callback" --no-interaction
+          
+          docker compose exec -T laravel chmod -R 755 storage/
+          
+          docker compose restart fastapi
+          
+          echo "Waiting for stack..."
+          for i in {1..30}; do 
+            if curl -fs http://localhost/health && curl -fs http://localhost/api/health; then
+              echo "Success!"
+              break
+            fi
+            sleep 2 
+          done
+      - name: Smoke endpoints
+        run: | 
+          curl -f http://localhost/health
+          curl -f http://localhost/api/health
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
+
+  test:
+    runs-on: ubuntu-latest
+    needs: smoke
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+      - name: Install PHP deps
+        working-directory: ./boardy-laravel
+        run: composer install --no-interaction --prefer-dist
+      - name: Run PhpUnit
+        working-directory: ./boardy-laravel
+        run: php artisan test
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Install Python deps
+        run: pip install -r boardy-api/requirements.txt pytest httpx
+      - name: Create Mock OAuth Public Key
+        working-directory: ./boardy-api
+        run: echo "mock-public-key" > oauth-public.key
+      - name: Run pytest
+        working-directory: ./boardy-api
+        run: python -m pytest -v
+
+
