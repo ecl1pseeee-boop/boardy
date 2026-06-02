@@ -17,3 +17,24 @@ jobs:
       - name: Python syntax check
         working-directory: boardy-api
         run: python -m compileall . -q
+  smoke:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build images
+        run: docker compose build 
+      - name: Start stack
+        run: | 
+          docker compose up -d 
+          for i in {1..30}; do 
+            curl -fs http://localhost/health && break 
+            sleep 2 
+          done
+      - name: Smoke endpoints
+        run: | 
+          curl -f http://localhost/health
+          curl -f http://localhost/api/health
+      - name: Tear down
+        if: always()
+        run: docker compose down -v

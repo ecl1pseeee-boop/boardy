@@ -65,6 +65,9 @@ app.add_middleware(
 app.include_router(comments.router)
 app.include_router(ws.router)
 
+@app.get("/health")
+def health():
+    return {"ok": True}
 
 @app.get('/status')
 async def status():
